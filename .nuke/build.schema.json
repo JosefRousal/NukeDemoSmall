@@ -107,6 +107,10 @@
             "Debug",
             "Release"
           ]
+        },
+        "EsriApiKey": {
+          "type": "string",
+          "default": "Secrets must be entered via 'nuke :secrets [profile]'"
         }
       }
     },
