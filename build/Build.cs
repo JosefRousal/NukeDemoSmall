@@ -12,7 +12,8 @@ using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
 
-[TeamCity(ManuallyTriggeredTargets = [nameof(Compile)])]
+[TeamCity(Version = "2024.03", ManuallyTriggeredTargets = [nameof(Compile)])]
+[TeamCityToken(nameof(EsriApiKey), "<guid>")]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
@@ -26,6 +27,9 @@ class Build : NukeBuild
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
+    [Parameter, Secret]
+    readonly string EsriApiKey;
+    
     Target Clean => _ => _
         .Before(Restore)
         .Executes(() =>
