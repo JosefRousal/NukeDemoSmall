@@ -8,6 +8,7 @@ using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
+using Nuke.Common.Tools.Octopus;
 using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
@@ -22,7 +23,7 @@ class Build : NukeBuild
     ///   - JetBrains Rider            https://nuke.build/rider
     ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
     ///   - Microsoft VSCode           https://nuke.build/vscode
-    public static int Main() => Execute<Build>(x => x.Compile);
+    public static int Main() => Execute<Build>(x => x.Pack);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
@@ -30,6 +31,9 @@ class Build : NukeBuild
     [Parameter, Secret] readonly string EsriApiKey;
 
     [Solution] readonly Solution Solution;
+
+    readonly AbsolutePath BuildOutputDirectory = RootDirectory / "build" / "output";
+    readonly AbsolutePath ArtifactsDirectory = RootDirectory / "artifacts";
 
     Project GetProject()
     {
@@ -56,6 +60,18 @@ class Build : NukeBuild
         .Executes(() =>
         {
             DotNetTasks.DotNetBuild(_ => _
-                .SetProjectFile(GetProject()));
+                .SetProjectFile(GetProject())
+                .SetOutputDirectory(BuildOutputDirectory));
+        });
+
+    Target Pack => _ => _
+        .DependsOn(Compile)
+        .Produces(ArtifactsDirectory / "*.nupkg")
+        .Executes(() =>
+        {
+            OctopusTasks.OctopusPack(_ => _
+                .SetId("api")
+                .SetBasePath(BuildOutputDirectory)
+                .SetOutputFolder(ArtifactsDirectory));
         });
 }

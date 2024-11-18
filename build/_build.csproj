@@ -15,4 +15,8 @@
     <PackageReference Include="Nuke.Common" Version="8.1.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageDownload Include="OctopusTools" Version="[9.1.7]" />
+  </ItemGroup>
+
 </Project>
