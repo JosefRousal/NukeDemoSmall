@@ -23,11 +23,9 @@ import jetbrains.buildServer.configs.kotlin.v2018_1.vcs.*
 version = "2024.03"
 
 project {
-    buildType(Restore)
-    buildType(Compile)
-    buildType(Pack)
+    buildType(Run)
 
-    buildTypesOrder = arrayListOf(Restore, Compile, Pack)
+    buildTypesOrder = arrayListOf(Run)
 
     params {
         select (
@@ -45,9 +43,9 @@ project {
             options = listOf("Minimal" to "Minimal", "Normal" to "Normal", "Quiet" to "Quiet", "Verbose" to "Verbose"),
             display = ParameterDisplay.NORMAL)
         password (
-            "env.EsriApiKey",
-            label = "EsriApiKey",
-            value = "credentialsJSON:25f663b7-67d1-4103-80db-48b7f7ca69ff",
+            "env.OctopusApiKey",
+            label = "OctopusApiKey",
+            value = "credentialsJSON:f77ace47-33af-4b49-aa92-87c6b6a67696",
             display = ParameterDisplay.HIDDEN)
         text(
             "teamcity.runner.commandline.stdstreams.encoding",
@@ -59,32 +57,8 @@ project {
             display = ParameterDisplay.HIDDEN)
     }
 }
-object Restore : BuildType({
-    name = "Restore"
-    vcs {
-        root(DslContext.settingsRoot)
-    }
-    steps {
-        exec {
-            path = "build.cmd"
-            arguments = "Restore --skip"
-            conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
-        }
-        exec {
-            path = "build.sh"
-            arguments = "Restore --skip"
-            conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
-        }
-    }
-    params {
-        text(
-            "teamcity.ui.runButton.caption",
-            "Restore",
-            display = ParameterDisplay.HIDDEN)
-    }
-})
-object Compile : BuildType({
-    name = "Compile"
+object Run : BuildType({
+    name = "Run"
     type = Type.DEPLOYMENT
     vcs {
         root(DslContext.settingsRoot)
@@ -92,57 +66,19 @@ object Compile : BuildType({
     steps {
         exec {
             path = "build.cmd"
-            arguments = "Compile --skip"
+            arguments = "Run --skip"
             conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
         }
         exec {
             path = "build.sh"
-            arguments = "Compile --skip"
+            arguments = "Run --skip"
             conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
         }
     }
     params {
         text(
             "teamcity.ui.runButton.caption",
-            "Compile",
+            "Run",
             display = ParameterDisplay.HIDDEN)
-    }
-    dependencies {
-        snapshot(Restore) {
-            onDependencyFailure = FailureAction.FAIL_TO_START
-            onDependencyCancel = FailureAction.CANCEL
-        }
-    }
-})
-object Pack : BuildType({
-    name = "Pack"
-    type = Type.DEPLOYMENT
-    vcs {
-        root(DslContext.settingsRoot)
-    }
-    artifactRules = "artifacts/*.nupkg => artifacts"
-    steps {
-        exec {
-            path = "build.cmd"
-            arguments = "Pack --skip"
-            conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
-        }
-        exec {
-            path = "build.sh"
-            arguments = "Pack --skip"
-            conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
-        }
-    }
-    params {
-        text(
-            "teamcity.ui.runButton.caption",
-            "Pack",
-            display = ParameterDisplay.HIDDEN)
-    }
-    dependencies {
-        snapshot(Compile) {
-            onDependencyFailure = FailureAction.FAIL_TO_START
-            onDependencyCancel = FailureAction.CANCEL
-        }
     }
 })

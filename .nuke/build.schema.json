@@ -24,10 +24,7 @@
     "ExecutableTarget": {
       "type": "string",
       "enum": [
-        "Clean",
-        "Compile",
-        "Pack",
-        "Restore"
+        "Run"
       ]
     },
     "Verbosity": {
@@ -109,7 +106,7 @@
             "Release"
           ]
         },
-        "EsriApiKey": {
+        "OctopusApiKey": {
           "type": "string",
           "default": "Secrets must be entered via 'nuke :secrets [profile]'"
         },

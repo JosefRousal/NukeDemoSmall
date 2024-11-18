@@ -16,9 +16,10 @@ using static Nuke.Common.IO.PathConstruction;
 
 [TeamCity(
     Version = "2024.03", 
-    ManuallyTriggeredTargets = [nameof(Compile), nameof(Pack)], ImportSecrets = [nameof(EsriApiKey)],
+    ManuallyTriggeredTargets = [nameof(Run)], 
+    ImportSecrets = [nameof(OctopusApiKey)],
     CleanCheckoutDirectory = false)]
-[TeamCityToken(nameof(EsriApiKey), "25f663b7-67d1-4103-80db-48b7f7ca69ff")]
+[TeamCityToken(nameof(OctopusApiKey), "f77ace47-33af-4b49-aa92-87c6b6a67696")]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
@@ -26,12 +27,12 @@ class Build : NukeBuild
     ///   - JetBrains Rider            https://nuke.build/rider
     ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
     ///   - Microsoft VSCode           https://nuke.build/vscode
-    public static int Main() => Execute<Build>(x => x.Pack);
+    public static int Main() => Execute<Build>(x => x.Run);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
-
-    [Parameter, Secret] readonly string EsriApiKey;
+    
+    [Parameter, Secret] readonly string OctopusApiKey;
 
     [Solution] readonly Solution Solution;
 
@@ -42,39 +43,30 @@ class Build : NukeBuild
     {
         return Solution.GetProject("NukeDemoSmall.Api");
     }
-    
-    Target Clean => _ => _
-        .Before(Restore)
+
+    Target Run => _ => _
         .Executes(() =>
         {
+            var project = GetProject();
+            
             DotNetTasks.DotNetClean(_ => _
-                .SetProject(GetProject()));
-        });
+                .SetProject(project));
 
-    Target Restore => _ => _
-        .Executes(() =>
-        {
             DotNetTasks.DotNetRestore(_ => _
-                .SetProjectFile(GetProject()));
-        });
+                .SetProjectFile(project));
 
-    Target Compile => _ => _
-        .DependsOn(Restore)
-        .Executes(() =>
-        {
             DotNetTasks.DotNetBuild(_ => _
-                .SetProjectFile(GetProject())
+                .SetProjectFile(project)
                 .SetOutputDirectory(BuildOutputDirectory));
-        });
 
-    Target Pack => _ => _
-        .DependsOn(Compile)
-        .Produces(ArtifactsDirectory / "*.nupkg")
-        .Executes(() =>
-        {
             OctopusTasks.OctopusPack(_ => _
                 .SetId("api")
                 .SetBasePath(BuildOutputDirectory)
                 .SetOutputFolder(ArtifactsDirectory));
+
+            OctopusTasks.OctopusPush(_ => _
+                .SetPackage(ArtifactsDirectory / "*.nupkg")
+                .SetServer("")
+                .SetApiKey(OctopusApiKey));
         });
 }
