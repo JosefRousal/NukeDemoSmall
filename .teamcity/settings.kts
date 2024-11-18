@@ -25,8 +25,9 @@ version = "2024.03"
 project {
     buildType(Restore)
     buildType(Compile)
+    buildType(Pack)
 
-    buildTypesOrder = arrayListOf(Restore, Compile)
+    buildTypesOrder = arrayListOf(Restore, Compile, Pack)
 
     params {
         select (
@@ -110,6 +111,39 @@ object Compile : BuildType({
     }
     dependencies {
         snapshot(Restore) {
+            onDependencyFailure = FailureAction.FAIL_TO_START
+            onDependencyCancel = FailureAction.CANCEL
+        }
+    }
+})
+object Pack : BuildType({
+    name = "Pack"
+    type = Type.DEPLOYMENT
+    vcs {
+        root(DslContext.settingsRoot)
+        cleanCheckout = true
+    }
+    artifactRules = "artifacts/*.nupkg => artifacts"
+    steps {
+        exec {
+            path = "build.cmd"
+            arguments = "Pack --skip"
+            conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
+        }
+        exec {
+            path = "build.sh"
+            arguments = "Pack --skip"
+            conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
+        }
+    }
+    params {
+        text(
+            "teamcity.ui.runButton.caption",
+            "Pack",
+            display = ParameterDisplay.HIDDEN)
+    }
+    dependencies {
+        snapshot(Compile) {
             onDependencyFailure = FailureAction.FAIL_TO_START
             onDependencyCancel = FailureAction.CANCEL
         }
