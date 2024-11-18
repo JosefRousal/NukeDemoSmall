@@ -24,8 +24,9 @@ version = "2024.03"
 
 project {
     buildType(Run)
+    buildType(Dev)
 
-    buildTypesOrder = arrayListOf(Run)
+    buildTypesOrder = arrayListOf(Run, Dev)
 
     params {
         select (
@@ -79,6 +80,31 @@ object Run : BuildType({
         text(
             "teamcity.ui.runButton.caption",
             "Run",
+            display = ParameterDisplay.HIDDEN)
+    }
+})
+object Dev : BuildType({
+    name = "Dev"
+    type = Type.DEPLOYMENT
+    vcs {
+        root(DslContext.settingsRoot)
+    }
+    steps {
+        exec {
+            path = "build.cmd"
+            arguments = "Dev --skip"
+            conditions { contains("teamcity.agent.jvm.os.name", "Windows") }
+        }
+        exec {
+            path = "build.sh"
+            arguments = "Dev --skip"
+            conditions { doesNotContain("teamcity.agent.jvm.os.name", "Windows") }
+        }
+    }
+    params {
+        text(
+            "teamcity.ui.runButton.caption",
+            "Dev",
             display = ParameterDisplay.HIDDEN)
     }
 })

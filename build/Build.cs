@@ -10,13 +10,14 @@ using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.Octopus;
 using Nuke.Common.Utilities.Collections;
+using Serilog;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
 
 [TeamCity(
     Version = "2024.03", 
-    ManuallyTriggeredTargets = [nameof(Run)], 
+    ManuallyTriggeredTargets = [nameof(Run), nameof(Dev)], 
     ImportSecrets = [nameof(OctopusApiKey)],
     CleanCheckoutDirectory = false)]
 [TeamCityToken(nameof(OctopusApiKey), "f77ace47-33af-4b49-aa92-87c6b6a67696")]
@@ -43,6 +44,12 @@ class Build : NukeBuild
     {
         return Solution.GetProject("NukeDemoSmall.Api");
     }
+
+    Target Dev => _ => _
+        .Executes(() =>
+        {
+            Log.Information("Some dev info");
+        });
 
     Target Run => _ => _
         .Executes(() =>
