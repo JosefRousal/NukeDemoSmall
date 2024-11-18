@@ -63,7 +63,6 @@ object Restore : BuildType({
     name = "Restore"
     vcs {
         root(DslContext.settingsRoot)
-        cleanCheckout = true
     }
     steps {
         exec {
@@ -89,7 +88,6 @@ object Compile : BuildType({
     type = Type.DEPLOYMENT
     vcs {
         root(DslContext.settingsRoot)
-        cleanCheckout = true
     }
     steps {
         exec {
@@ -121,7 +119,6 @@ object Pack : BuildType({
     type = Type.DEPLOYMENT
     vcs {
         root(DslContext.settingsRoot)
-        cleanCheckout = true
     }
     artifactRules = "artifacts/*.nupkg => artifacts"
     steps {

@@ -14,7 +14,10 @@ using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
 
-[TeamCity(Version = "2024.03", ManuallyTriggeredTargets = [nameof(Compile), nameof(Pack)], ImportSecrets = [nameof(EsriApiKey)])]
+[TeamCity(
+    Version = "2024.03", 
+    ManuallyTriggeredTargets = [nameof(Compile), nameof(Pack)], ImportSecrets = [nameof(EsriApiKey)],
+    CleanCheckoutDirectory = false)]
 [TeamCityToken(nameof(EsriApiKey), "25f663b7-67d1-4103-80db-48b7f7ca69ff")]
 class Build : NukeBuild
 {
