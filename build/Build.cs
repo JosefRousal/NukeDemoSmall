@@ -7,6 +7,7 @@ using Nuke.Common.Execution;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
+using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
@@ -28,20 +29,33 @@ class Build : NukeBuild
 
     [Parameter, Secret] readonly string EsriApiKey;
 
+    [Solution] readonly Solution Solution;
+
+    Project GetProject()
+    {
+        return Solution.GetProject("NukeDemoSmall.Api");
+    }
+    
     Target Clean => _ => _
         .Before(Restore)
         .Executes(() =>
         {
+            DotNetTasks.DotNetClean(_ => _
+                .SetProject(GetProject()));
         });
 
     Target Restore => _ => _
         .Executes(() =>
         {
+            DotNetTasks.DotNetRestore(_ => _
+                .SetProjectFile(GetProject()));
         });
 
     Target Compile => _ => _
         .DependsOn(Restore)
         .Executes(() =>
         {
+            DotNetTasks.DotNetBuild(_ => _
+                .SetProjectFile(GetProject()));
         });
 }

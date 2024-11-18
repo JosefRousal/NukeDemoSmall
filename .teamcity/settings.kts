@@ -43,6 +43,11 @@ project {
             value = "Normal",
             options = listOf("Minimal" to "Minimal", "Normal" to "Normal", "Quiet" to "Quiet", "Verbose" to "Verbose"),
             display = ParameterDisplay.NORMAL)
+        password (
+            "env.EsriApiKey",
+            label = "EsriApiKey",
+            value = "credentialsJSON:25f663b7-67d1-4103-80db-48b7f7ca69ff",
+            display = ParameterDisplay.HIDDEN)
         text(
             "teamcity.runner.commandline.stdstreams.encoding",
             "UTF-8",
